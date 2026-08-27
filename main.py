@@ -14,8 +14,14 @@ Path("exports").mkdir(exist_ok=True)
 
 def phone(value):
     n = re.sub(r"\D", "", str(value))
-    if len(n) == 13 and n.startswith("55"): n = n[2:]
-    return n if len(n) in (10,11) and n[:2].isdigit() and 11 <= int(n[:2]) <= 99 else None
+
+    if n.startswith("55"):
+        n = n[2:]
+
+    if len(n) not in (10, 11):
+        return None
+
+    return "+55" + n
 
 @app.get("/", response_class=HTMLResponse)
 def home():
