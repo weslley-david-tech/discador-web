@@ -85,17 +85,20 @@ def start(cid: str):
     client = Client(account_sid, auth_token)
 
     try:
-        call = client.calls.create(
-    to=r["telefone"],
-    from_=twilio_number,
-    twiml=f"""<?xml version="1.0" encoding="UTF-8"?>
+
+    call = client.calls.create(
+        to=r["telefone"],
+        from_=twilio_number,
+        twiml=f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
     <Say language="pt-BR">
         {r["mensagem"]}
     </Say>
 </Response>"""
-)
-'''
+    )
+
+    r["status"] = "EM CHAMADA"
+    r["call_sid"] = call.sid
         )
 
         r["status"] = "EM CHAMADA"
