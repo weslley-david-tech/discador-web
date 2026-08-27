@@ -86,14 +86,15 @@ def start(cid: str):
 
     try:
         call = client.calls.create(
-            to=r["telefone"],
-            from_=twilio_number,
-            twiml=f'''
+    to=r["telefone"],
+    from_=twilio_number,
+    twiml=f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Say voice="Polly.Camila" language="pt-BR">
+    <Say language="pt-BR">
         {r["mensagem"]}
     </Say>
-</Response>
+</Response>"""
+)
 '''
         )
 
