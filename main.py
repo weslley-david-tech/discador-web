@@ -1,3 +1,5 @@
+import os
+from twilio.rest import Client
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -51,7 +53,58 @@ def status(cid:str):
             "current": c["records"][c["index"]] if c["index"]<len(c["records"]) else None}
 
 @app.post("/api/campaign/{cid}/start")
-def start(cid:str):
+def start(cid: str):
+    c = campaigns.get(cid)
+
+    if not c:
+        raise HTTPException(404, "Campanha não encontrada")
+
+    c["state"] = "RODANDO"
+
+    if c["index"] >= len(c["records"]):
+        return {"ok": True, "message": "Campanha concluída"}
+
+    r = c["records"][c["index"]]
+
+    account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
+    auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
+    twilio_number = os.environ.get("TWILIO_PHONE_NUMBER")
+
+    if not account_sid or not auth_token or not twilio_number:
+        raise HTTPException(
+            500,
+            "Credenciais da Twilio não configuradas"
+        )
+
+    client = Client(account_sid, auth_token)
+
+    try:
+        call = client.calls.create(
+            to=r["telefone"],
+            from_=twilio_number,
+            twiml=f'''
+<Response>
+    <Say voice="Polly.Camila" language="pt-BR">
+        {r["mensagem"]}
+    </Say>
+</Response>
+'''
+        )
+
+        r["status"] = "EM CHAMADA"
+        r["call_sid"] = call.sid
+
+        return {
+            "ok": True,
+            "sid": call.sid
+        }
+
+    except Exception as e:
+        r["status"] = "FALHOU"
+        raise HTTPException(
+            500,
+            f"Erro ao realizar ligação: {str(e)}"
+        )
     c=campaigns.get(cid)
     if not c: raise HTTPException(404,"Campanha não encontrada")
     c["state"]="RODANDO"
