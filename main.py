@@ -7,6 +7,8 @@ from pathlib import Path
 app = FastAPI(title="Discador PT-BR")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 campaigns = {}
+Path("uploads").mkdir(exist_ok=True)
+Path("exports").mkdir(exist_ok=True)
 
 def phone(value):
     n = re.sub(r"\D", "", str(value))
